@@ -62,6 +62,12 @@
         }
     </style>
     <script>
+        // وظيفة لفحص صيغة الإيميل
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
         async function checkEmail(email) {
             const url = "https://i.instagram.com/api/v1/users/check_email/";
             const headers = {
@@ -87,7 +93,7 @@
                 }
             } catch (error) {
                 console.error("خطأ:", error);
-                return `[ERROR] ${email}: فشل الاتصال`;
+                return `[ERROR] ${email}`;
             }
         }
 
@@ -98,14 +104,19 @@
             const reader = new FileReader();
             reader.onload = async function(e) {
                 const content = e.target.result;
-                const emails = content.split(/\r?\n/); // تقطيع الإيميلات من الملف
+                const lines = content.split(/\r?\n/); // تقطيع الإيميلات من الملف
 
                 const resultElement = document.getElementById("RESULT");
                 resultElement.innerText = "جاري الفحص...\n";
 
-                for (const email of emails) {
-                    if (email.trim() === "") continue; // تجاهل الأسطر الفارغة
-                    const result = await checkEmail(email.trim());
+                for (const line of lines) {
+                    const email = line.trim();
+                    if (!isValidEmail(email)) {
+                        // إذا كان السطر لا يحتوي على إيميل صحيح، يتم تخطيه
+                        continue;
+                    }
+
+                    const result = await checkEmail(email);
                     const resultLine = document.createElement("div");
 
                     if (result.startsWith("[GOOD]")) {
